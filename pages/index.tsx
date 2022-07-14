@@ -17,7 +17,24 @@ import {
 import * as React from "react";
 import { posts } from "../data";
 
-export const App = () => (
+export const fetcher = (url) => fetch(url).then((res) => res.json());
+
+export const getStaticProps = async () => {
+  const { data } = await fetcher(
+    `${process.env.BASE_STRAPI_URL}/api/articulos`
+  );
+
+  try {
+    return {
+      props: {
+        data,
+      },
+    };
+  } catch (e) {
+    console.warn("errors:", e);
+  }
+};
+export const App = ({ data }) => (
   <Container py={{ base: "16", md: "24" }}>
     <Stack spacing={{ base: "16", md: "24" }}>
       <Stack spacing={{ base: "8", md: "10" }} align="center">
@@ -41,8 +58,8 @@ export const App = () => (
         rowGap={{ base: "8", md: "12" }}
         columnGap="8"
       >
-        {posts.map((post) => (
-          <Link key={post.id} _hover={{ textDecor: "none" }} role="group">
+        {data.map(({ attributes, id }) => (
+          <Link key={id} _hover={{ textDecor: "none" }} role="group">
             <Box
               p="6"
               bg="bg-surface"
@@ -57,30 +74,12 @@ export const App = () => (
                 height="full"
               >
                 <Stack spacing="8">
-                  <Box overflow="hidden">
-                    <Image
-                      src={post.image}
-                      alt={post.title}
-                      width="full"
-                      height="15rem"
-                      objectFit="cover"
-                    />
-                  </Box>
                   <Stack spacing="3">
-                    <Text fontSize="sm" fontWeight="semibold" color="accent">
-                      {post.category}
-                    </Text>
-                    <Heading size="xs">{post.title}</Heading>
-                    <Text color="muted">{post.excerpt}</Text>
+                    <Heading size="xs">{attributes.titulo}</Heading>
+                    <Text color="muted">{attributes.descripcion}</Text>
+                    <Text color="muted">{attributes.cuerpo}</Text>
                   </Stack>
                 </Stack>
-                <HStack>
-                  <Avatar src={post.author.avatarUrl} boxSize="10" />
-                  <Box fontSize="sm">
-                    <Text fontWeight="medium">{post.author.name}</Text>
-                    <Text color="muted">{post.publishedAt}</Text>
-                  </Box>
-                </HStack>
               </Stack>
             </Box>
           </Link>
